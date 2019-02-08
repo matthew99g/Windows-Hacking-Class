@@ -19,7 +19,7 @@ public:
 	void SignatureDefaultFormatString(const BYTE *, unsigned int, char *);
 	bool CheckSignatureValid(HANDLE, MODULEINFO, PBYTE, DWORD);
 	bool CheckSignatureValidString(HANDLE, MODULEINFO, PBYTE, DWORD);
-	void AutoBuildSignature(MODULEINFO, uintptr_t, unsigned int, HANDLE);
+	void AutoBuildSignature(MODULEINFO, uintptr_t, unsigned int, HANDLE, char *);
 
 	int iMaskOpen;
 

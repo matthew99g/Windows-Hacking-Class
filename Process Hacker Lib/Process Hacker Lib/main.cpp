@@ -14,6 +14,7 @@ const char szAppName[] = "ac_client.exe";
 int main(const int argc, const char *argv[]) {
 	ProcessHacker *Hack = new ProcessHacker;
 	unsigned int iStartAddress;
+	char *szSignature = new char[256];
 
 	uintptr_t uProcessId = Hack->GetProcId(szAppName);
 	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, uProcessId);
@@ -23,7 +24,10 @@ int main(const int argc, const char *argv[]) {
 	scanf("%x", &iStartAddress);
 	getchar();
 
-	Hack->AutoBuildSignature(modInfo, uProcessId, iStartAddress, hProc);
+	Hack->AutoBuildSignature(modInfo, uProcessId, iStartAddress, hProc, szSignature);
+
+	delete Hack;
+	delete szSignature;
 
 	getchar();
 

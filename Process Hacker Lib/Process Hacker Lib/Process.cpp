@@ -306,7 +306,7 @@ bool ProcessHacker::CheckSignatureValidString(HANDLE hProcess, MODULEINFO modInf
 	return true;
 }
 
-void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId, unsigned int iStartAddress, HANDLE hProc) {
+void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId, unsigned int iStartAddress, HANDLE hProc, char *szSavedSignature) {
 	unsigned int iSignatureLength = 2;
 	unsigned int iStartAddressTemp = iStartAddress;
 
@@ -342,8 +342,13 @@ void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId,
 		delete szSignature;
 	}
 
+#ifdef _DEBUG
 	printf("\nGenerated Signature @ 0x%x | 0x%x Bytes from 0x%x\nSignature: %s\n",
 		iStartAddress, iStartAddressTemp - iStartAddress, iStartAddressTemp, szSignatureString);
+#endif // _DEBUG
+
+
+	strcpy(szSavedSignature, szSavedSignature);
 
 	delete szSignatureString;
 	delete szSignature;
