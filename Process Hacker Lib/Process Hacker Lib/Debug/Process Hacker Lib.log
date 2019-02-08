@@ -1,12 +1,2 @@
-﻿  Process.cpp
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(78): warning C4477: 'printf' : format string '%X' requires an argument of type 'unsigned int', but variadic argument 1 has type 'LPVOID'
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(182): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(186): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(187): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(194): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(201): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(237): warning C4018: '<': signed/unsigned mismatch
-c:\users\okole\source\repos\process hacker lib\process hacker lib\process.cpp(285): warning C4018: '<': signed/unsigned mismatch
-  main.cpp
-  Generating Code...
+﻿  main.cpp
   Process Hacker Lib.vcxproj -> C:\Users\okole\source\repos\Process Hacker Lib\Debug\Process Hacker Lib.exe

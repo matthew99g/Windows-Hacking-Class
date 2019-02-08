@@ -10,11 +10,13 @@
 #define PLAYER_CLASS 0x50f4f4
 
 const char szAppName[] = "ac_client.exe";
+const char szOpCode[] = "\x90\x90";
 
 int main(const int argc, const char *argv[]) {
 	ProcessHacker *Hack = new ProcessHacker;
 	unsigned int iStartAddress;
 	char *szSignature = new char[256];
+	PBYTE pSignature = new BYTE[256];
 
 	uintptr_t uProcessId = Hack->GetProcId(szAppName);
 	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, uProcessId);
@@ -24,10 +26,20 @@ int main(const int argc, const char *argv[]) {
 	scanf("%x", &iStartAddress);
 	getchar();
 
-	Hack->AutoBuildSignature(modInfo, uProcessId, iStartAddress, hProc, szSignature);
+	Hack->AutoBuildSignature(modInfo, uProcessId, iStartAddress, hProc, szSignature, pSignature);
+
+	uintptr_t uTargetAddress = Hack->GetAddressFromSignatureBytes(hProc, modInfo, pSignature, Hack->iRecentScanSize);
+	if (!uTargetAddress)
+		return EXIT_FAILURE;
+
+	if (!Hack->WriteTargetOpcode(hProc, modInfo, szOpCode, uTargetAddress + Hack->iAddressOffset))
+		return EXIT_FAILURE;
+
+	printf("Successfully Wrote Shell Code @ 0x%02x\n", uTargetAddress + Hack->iAddressOffset);
 
 	delete Hack;
 	delete szSignature;
+	delete pSignature;
 
 	getchar();
 

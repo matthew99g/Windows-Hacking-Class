@@ -10,6 +10,8 @@
 ProcessHacker::ProcessHacker()
 {
 	iMaskOpen = 0;
+	iRecentScanSize = 0;
+	iAddressOffset = 0;
 }
 
 ProcessHacker::~ProcessHacker()
@@ -168,6 +170,7 @@ bool ProcessHacker::CreateSignature(MODULEINFO modInfo, uintptr_t uStartAddress,
 	if (iBytesRead < iSizeOfScan)
 		return false;
 
+	iRecentScanSize = iSizeOfScan;
 	return true;
 }
 
@@ -243,7 +246,7 @@ bool ProcessHacker::CheckSignatureValid(HANDLE hProcess, MODULEINFO modInfo, PBY
 
 		if (bSearch) {
 			count++;
-			printf("%d @ 0x%X\n", count, (DWORD)(DWORD *)(p + dwMemoryBase));
+			//printf("%d @ 0x%X\n", count, (DWORD)(DWORD *)(p + dwMemoryBase));
 		}
 
 	}
@@ -291,7 +294,7 @@ bool ProcessHacker::CheckSignatureValidString(HANDLE hProcess, MODULEINFO modInf
 
 		if (bSearch) {
 			count++;
-			printf("%d @ 0x%X\n", count, (DWORD)(DWORD *)(p + dwMemoryBase));
+			//printf("%d @ 0x%X\n", count, (DWORD)(DWORD *)(p + dwMemoryBase));
 		}
 
 	}
@@ -306,7 +309,7 @@ bool ProcessHacker::CheckSignatureValidString(HANDLE hProcess, MODULEINFO modInf
 	return true;
 }
 
-void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId, unsigned int iStartAddress, HANDLE hProc, char *szSavedSignature) {
+void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId, unsigned int iStartAddress, HANDLE hProc, char *szSavedSignature, PBYTE pSignatureBytes) {
 	unsigned int iSignatureLength = 2;
 	unsigned int iStartAddressTemp = iStartAddress;
 
@@ -347,10 +350,69 @@ void ProcessHacker::AutoBuildSignature(MODULEINFO modInfo, uintptr_t uProcessId,
 		iStartAddress, iStartAddressTemp - iStartAddress, iStartAddressTemp, szSignatureString);
 #endif // _DEBUG
 
+	iAddressOffset = iStartAddressTemp - iStartAddress;
+
 
 	strcpy(szSavedSignature, szSavedSignature);
+	memcpy(pSignatureBytes, szSignature, iSignatureLength * 4);
 
 	delete szSignatureString;
 	delete szSignature;
+}
 
+uintptr_t ProcessHacker::GetAddressFromSignatureBytes(HANDLE hProc, MODULEINFO modInfo, PBYTE pSignature, unsigned int size) {
+	DWORD dwOld = 0;
+	DWORD count = 0;
+
+	DWORD dwMemoryBase = (DWORD)modInfo.lpBaseOfDll;
+	DWORD dwMemorySize = (DWORD)modInfo.SizeOfImage;
+
+	bool bSearch = false;
+
+	DWORD dwSignatureSize = size;
+
+	BYTE *buf = new BYTE[dwMemorySize];
+	ZeroMemory(buf, sizeof(buf));
+
+	VirtualProtectEx(hProc, (LPVOID)(dwMemoryBase), dwMemorySize, PROCESS_ALL_ACCESS, &dwOld);
+	ReadProcessMemory(hProc, (LPCVOID)(dwMemoryBase), buf, dwMemorySize, NULL);
+
+	int p = 0;
+	DWORD i = 0;
+
+	for (p = 0; p < dwMemorySize - dwSignatureSize; p++) {
+		for (i = 0; i < dwSignatureSize; i++) {
+			bSearch = (*((BYTE *)(buf + i + p)) == *((BYTE *)(pSignature + i)) || *((BYTE *)(pSignature + i)) == '?') ? true : false;
+			if (!bSearch)
+				break;
+		}
+
+		if (bSearch) {
+			VirtualProtectEx(hProc, (LPVOID)(dwMemoryBase), dwMemorySize, dwOld, NULL);
+			delete buf;
+#ifdef _DEBUG
+			printf("[DEBUG]Found Address 0x%x from signature\n", (p + dwMemoryBase));
+#endif // _DEBUG
+			return (uintptr_t)(p + dwMemoryBase);
+		}
+
+	}
+
+	VirtualProtectEx(hProc, (LPVOID)(dwMemoryBase), dwMemorySize, dwOld, NULL);
+
+	delete buf;
+	return 0;
+}
+
+bool ProcessHacker::WriteTargetOpcode(HANDLE hProc, MODULEINFO modInfo, const char *szShellcode, uintptr_t uAddress) {
+	unsigned int iSize = strlen(szShellcode);
+	DWORD dwOld = NULL;
+
+	VirtualProtectEx(hProc, (LPVOID)uAddress, iSize, PAGE_EXECUTE_READWRITE, &dwOld);
+
+	bool bWrite = WriteProcessMemory(hProc, (LPVOID)uAddress, szShellcode, iSize, NULL);
+
+	VirtualProtectEx(hProc, (LPVOID)uAddress, iSize, dwOld, NULL);
+
+	return bWrite;
 }

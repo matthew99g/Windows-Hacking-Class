@@ -19,9 +19,13 @@ public:
 	void SignatureDefaultFormatString(const BYTE *, unsigned int, char *);
 	bool CheckSignatureValid(HANDLE, MODULEINFO, PBYTE, DWORD);
 	bool CheckSignatureValidString(HANDLE, MODULEINFO, PBYTE, DWORD);
-	void AutoBuildSignature(MODULEINFO, uintptr_t, unsigned int, HANDLE, char *);
+	void AutoBuildSignature(MODULEINFO, uintptr_t, unsigned int, HANDLE, char *, PBYTE);
+	uintptr_t GetAddressFromSignatureBytes(HANDLE, MODULEINFO, PBYTE, unsigned int);
+	bool WriteTargetOpcode(HANDLE, MODULEINFO, const char *, uintptr_t);
 
-	int iMaskOpen;
+	unsigned int iMaskOpen;
+	unsigned int iRecentScanSize;
+	unsigned int iAddressOffset;
 
 private:
 
